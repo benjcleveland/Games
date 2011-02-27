@@ -10,7 +10,8 @@ class Game(models.Model):
     publisher = models.CharField(max_length=200)
     description = models.CharField(max_length=400)
     last_played = models.DateTimeField('last played')
-
+    image_name = models.CharField(max_length=200)
+    genre = models.CharField(max_length=100)
 
 class Rating(models.Model):
     
