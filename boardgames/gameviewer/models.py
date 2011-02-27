@@ -4,7 +4,7 @@ from django.db import models
 class Game(models.Model):
 
     def __unicode__(self):
-        return self.title
+        return str(self.title)
 
     title = models.CharField(max_length=200)
     publisher = models.CharField(max_length=200)
@@ -17,7 +17,9 @@ class Game(models.Model):
 class Rating(models.Model):
     
     def __unicode__(self):
-        return self.rating
+        return str(self.rating)
 
     game = models.ForeignKey(Game)
     rating = models.IntegerField()
+    name = models.CharField(max_length=20)
+    comment = models.CharField(max_length=144)

@@ -2,7 +2,8 @@
 from django.http import HttpResponse
 from django.shortcuts import render_to_response, get_object_or_404, get_list_or_404
 from django.http import Http404
-from gameviewer.models import Game
+from django.db.models import Avg
+from gameviewer.models import Game, Rating
 
 def index(request):
     latest_game_list = Game.objects.all().order_by('title')
@@ -10,8 +11,14 @@ def index(request):
 
 
 def detail(request, game_id):
+
+    # get the game object
     g = get_object_or_404(Game, pk=game_id)
-    return render_to_response('gameviewer/detail.html', {'game': g})
+
+    # determine the game average rating
+    average = g.rating_set.all( ).aggregate(Avg('rating'))
+
+    return render_to_response('gameviewer/detail.html', {'game': g, 'average_rating': average} )
 
 
 def list(request, game_id, search):
