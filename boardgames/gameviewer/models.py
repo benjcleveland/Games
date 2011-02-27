@@ -12,6 +12,7 @@ class Game(models.Model):
     last_played = models.DateTimeField('last played')
     image_name = models.CharField(max_length=200)
     genre = models.CharField(max_length=100)
+    image = models.FileField(upload_to='images', max_length=500 )
 
 class Rating(models.Model):
     
