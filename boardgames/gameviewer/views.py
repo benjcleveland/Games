@@ -50,8 +50,9 @@ def rate(request, game_id):
     try:
         name = request.POST['name']
         rating = request.POST['rating']
+        comment = request.POST['comment']
     except (KeyError):
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating': average, 'error_message': 'Not all fields are filled in'}, context_instance=RequestContext(request))
+        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating': average, 'error_message': 'Error - Not all fields are filled in'}, context_instance=RequestContext(request))
 
     if len(name)== 0:
         return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average, 'error_message': 'Error - no name given'}, context_instance=RequestContext(request))
@@ -62,13 +63,16 @@ def rate(request, game_id):
     try:
         rating = Decimal(rating)
     except:
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average,'error_message': 'Error - invalid rating value' + rating}, context_instance=RequestContext(request))
+        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average,'error_message': 'Error - invalid rating value ' + rating}, context_instance=RequestContext(request))
+    
+    if rating < 0 or rating > 10:
+        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average,'error_message': 'Error - invalid rating value ' + str(rating)}, context_instance=RequestContext(request))
 
-    r = game.rating_set.create(rating=rating, name=name, comment='')
+    r = game.rating_set.create(rating=rating, name=name, comment=comment)
     game.save()
 
     average = game.rating_set.all( ).aggregate(Avg('rating'))
-    return render_to_response('gameviewer/detail.html', {'game': game, 'average_rating':average}, context_instance=RequestContext(request) )
+    return render_to_response('gameviewer/detail.html', {'game': game, 'average_rating':average }, context_instance=RequestContext(request) )
 
 
 def list(request, game_id, search):
