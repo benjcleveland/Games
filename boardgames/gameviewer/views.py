@@ -6,8 +6,9 @@ from django.db.models import Avg
 from django.template import RequestContext
 from django.contrib.auth import authenticate, login
 
-from gameviewer.models import Game, Rating
 from decimal import *
+from operator import itemgetter
+from gameviewer.models import Game, Rating
 
 # helper function
 def get_average( game ):
@@ -23,6 +24,26 @@ def index(request):
     latest_game_list = Game.objects.all().order_by('title')
     return render_to_response('gameviewer/index.html', {'latest_game_list':latest_game_list, 'title':'Welcome to my Board Game Collection!'})
 
+def about(request):
+
+    return render_to_response('gameviewer/about.html', {'title':'My board game collection'})
+
+def top(request):
+    '''
+    display the top 10 rated games
+    '''
+    # get all the games
+    latest_game_list = Game.objects.all()
+
+    top_list = [] 
+    for game in latest_game_list:
+        # create a list of dictionaries with teh average rating for each game
+        top_list.append({'title':game.title, 'id':game.id, 'average_rating':get_average(game)['rating__avg']})
+
+    # sort the games by rating and only take the top 10
+    top_list = sorted(top_list, key=itemgetter('average_rating'), reverse=True)[:10] 
+
+    return render_to_response('gameviewer/index.html', {'latest_game_list':top_list, 'title':'Top 10 Rated board games'})
 
 def detail(request, game_id):
     '''
@@ -53,7 +74,7 @@ def rate(request, game_id):
         return HttpResponse('Invalid login')
     '''
     game = get_object_or_404(Game, pk=game_id)
-    average = get_averagei(game)
+    average = get_average(game)
 
     try:
         name = request.POST['name']
@@ -106,7 +127,7 @@ def list(request, game_id, search):
     elif search == 'max':
         games = get_list_or_404(Game, maxplayers__gte=g.maxplayers)
     elif search == 'min':
-        games = get_list_or_404(Game, minplayers__gte=g.minplayers)
+        games = get_list_or_404(Game, minplayers__lte=g.minplayers)
     elif search == 'year':
         games = get_list_or_404(Game, year_published=g.year_published)
     else:
