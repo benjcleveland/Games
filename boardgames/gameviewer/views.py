@@ -9,6 +9,13 @@ from django.contrib.auth import authenticate, login
 from gameviewer.models import Game, Rating
 from decimal import *
 
+# helper function
+def get_average( game ):
+    '''
+    Return the average game rating to two decimal places
+    '''
+    return game.rating_set.all().aggregate(Avg('rating'))
+
 def index(request):
     '''
     Display all the games we currently have
@@ -26,7 +33,7 @@ def detail(request, game_id):
     g = get_object_or_404(Game, pk=game_id)
 
     # determine the game average rating
-    average = g.rating_set.all( ).aggregate(Avg('rating'))
+    average = get_average(g)
 
     return render_to_response('gameviewer/detail.html', {'game': g, 'average_rating': average}, context_instance=RequestContext(request) )
 
@@ -46,7 +53,8 @@ def rate(request, game_id):
         return HttpResponse('Invalid login')
     '''
     game = get_object_or_404(Game, pk=game_id)
-    average = game.rating_set.all( ).aggregate(Avg('rating'))
+    average = get_averagei(game)
+
     try:
         name = request.POST['name']
         rating = request.POST['rating']
@@ -71,7 +79,8 @@ def rate(request, game_id):
     r = game.rating_set.create(rating=rating, name=name, comment=comment)
     game.save()
 
-    average = game.rating_set.all( ).aggregate(Avg('rating'))
+    average = get_average(game)
+
     return render_to_response('gameviewer/detail.html', {'game': game, 'average_rating':average }, context_instance=RequestContext(request) )
 
 
@@ -84,8 +93,8 @@ def list(request, game_id, search):
     
     search_dict = { 'publisher' : 'Games published by ' + g.publisher,
         'genre' : 'Games in the ' + g.genre + ' genre',
-        'max' : 'Games with a maximum of ' + str(g.maxplayers) + ' players', 
-        'min' : 'Games with a minimum of ' + str(g.minplayers) + ' players',
+        'max' : 'Games that support at least ' + str(g.maxplayers) + ' players', 
+        'min' : 'Games that support at least ' + str(g.minplayers) + ' players',
         'year' :'Games published in ' +  g.year_published,
     }
 
@@ -95,9 +104,9 @@ def list(request, game_id, search):
     elif search == 'genre':
         games = get_list_or_404(Game, genre=g.genre)
     elif search == 'max':
-        games = get_list_or_404(Game, maxplayers=g.maxplayers)
+        games = get_list_or_404(Game, maxplayers__gte=g.maxplayers)
     elif search == 'min':
-        games = get_list_or_404(Game, minplayers=g.minplayers)
+        games = get_list_or_404(Game, minplayers__gte=g.minplayers)
     elif search == 'year':
         games = get_list_or_404(Game, year_published=g.year_published)
     else:
