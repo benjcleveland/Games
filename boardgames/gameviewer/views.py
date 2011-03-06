@@ -15,7 +15,12 @@ def get_average( game ):
     '''
     Return the average game rating to two decimal places
     '''
-    return game.rating_set.all().aggregate(Avg('rating'))
+    getcontext().prec = 3    
+    avg =  game.rating_set.all().aggregate(Avg('rating'))
+    if avg['rating__avg'] != None:
+        # limit the average to two decimal places
+        avg['rating__avg'] = ('%0.2f' % avg['rating__avg'])
+    return avg
 
 def index(request):
     '''

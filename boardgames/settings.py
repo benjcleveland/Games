@@ -1,6 +1,6 @@
 # Django settings for boardgames project.
 
-DEBUG = True
+DEBUG = False 
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
@@ -95,5 +95,6 @@ INSTALLED_APPS = (
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
     'gameviewer',
-    'south'
+    'south',
+    'myteam',
 )

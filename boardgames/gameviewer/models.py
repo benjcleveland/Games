@@ -23,6 +23,6 @@ class Rating(models.Model):
         return str(self.rating)
     
     game = models.ForeignKey(Game)
-    rating = models.DecimalField( max_digits=2, decimal_places=1)
+    rating = models.DecimalField( max_digits=3, decimal_places=1)
     name = models.CharField(max_length=20)
     comment = models.CharField(max_length=144, default='')
