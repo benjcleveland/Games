@@ -5,7 +5,7 @@ from django import forms
 class RatingForm(forms.Form):
     name = forms.CharField(max_length=20)
     rating = forms.DecimalField( max_value=10, min_value=0)
-    comment = forms.CharField(max_length=144, required=False)
+    comment = forms.CharField(max_length=144, required=False, widget=forms.Textarea( attrs={'rows':"4"}))
 
 # Create your models here.
 class Game(models.Model):
