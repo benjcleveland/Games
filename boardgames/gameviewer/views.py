@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login
 
 from decimal import *
 from operator import itemgetter
-from gameviewer.models import Game, Rating
+from gameviewer.models import Game, Rating, RatingForm
 
 # helper function
 def get_average( game ):
@@ -61,54 +61,34 @@ def detail(request, game_id):
     # determine the game average rating
     average = get_average(g)
 
-    return render_to_response('gameviewer/detail.html', {'game': g, 'average_rating': average}, context_instance=RequestContext(request) )
+    # create the form
+    form = RatingForm()
+
+    return render_to_response('gameviewer/detail.html', {'game': g, 'average_rating': average, 'rating_form':form,}, context_instance=RequestContext(request) )
 
 def rate(request, game_id):
     '''
     add a rating to a game
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        if user.is_active:
-            login( request, user )
-            return HttpResonse('successful login')
-        else:
-            return HttpResonse('disabled account')
-    else:
-        return HttpResponse('Invalid login')
     '''
+
     game = get_object_or_404(Game, pk=game_id)
     average = get_average(game)
+    rating_form = RatingForm(request.POST)
 
-    try:
-        name = request.POST['name']
-        rating = request.POST['rating']
-        comment = request.POST['comment']
-    except (KeyError):
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating': average, 'error_message': 'Error - Not all fields are filled in'}, context_instance=RequestContext(request))
+    if rating_form.is_valid():
 
-    if len(name)== 0:
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average, 'error_message': 'Error - no name given'}, context_instance=RequestContext(request))
+        name = rating_form.cleaned_data['name']
+        comment = rating_form.cleaned_data['comment']
+        rating = rating_form.cleaned_data['rating']
 
-    if len(rating)== 0:
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average, 'error_message': 'Error - no rating given'}, context_instance=RequestContext(request))
-    
-    try:
-        rating = Decimal(rating)
-    except:
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average,'error_message': 'Error - invalid rating value ' + rating}, context_instance=RequestContext(request))
-    
-    if rating < 0 or rating > 10:
-        return render_to_response('gameviewer/detail.html', {'game':game, 'average_rating':average,'error_message': 'Error - invalid rating value ' + str(rating)}, context_instance=RequestContext(request))
+        r = game.rating_set.create(rating=rating, name=name, comment=comment)
+        game.save()
 
-    r = game.rating_set.create(rating=rating, name=name, comment=comment)
-    game.save()
+        average = get_average(game)
 
-    average = get_average(game)
-
-    return render_to_response('gameviewer/detail.html', {'game': game, 'average_rating':average }, context_instance=RequestContext(request) )
-
+        return render_to_response('gameviewer/detail.html', {'game': game, 'average_rating':average }, context_instance=RequestContext(request) )
+    else:
+        return render_to_response('gameviewer/detail.html', {'game': game, 'average_rating':average, 'rating_form': rating_form }, context_instance=RequestContext(request) )
 
 def list(request, game_id, search):
     '''

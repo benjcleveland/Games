@@ -46,16 +46,21 @@
 {% endfor %}
 </p>
 
+
+{% if rating_form %}
 <h4>Rate this game</h4>
+
 <form action="/games/rate/{{ game.id }}/" method="post">
-{% csrf_token %}
-    <table>
-    <tr><td>Name:</td><td><input type="text" name="name" size="20"/></td></tr>
-    <tr><td>Rating:</td><td><input type="text" name="rating" size="20"/></td></tr>
-    <tr><td>Comment: <br>optional </td><td><textarea name="comment" cols="50" rows="3"/></textarea></td></tr>
-    <tr><td><input type="submit" value="Submit" /></td><td><p>{{ error_message }}</p></td></tr>
+    {% csrf_token %}
+    <table cellpadding="1">
+        {% for field in rating_form %}
+        <tr><td>{{ field.label_tag }}:</td><td>{{ field }}</td><td>{{ field.errors }}</td></tr> 
+        {% endfor %}
+        <tr><td><input type="submit" value="Submit" /></td></tr>
     </table>
 </form>
+{% endif %}
+
 <p class="quote">Last played on {{ game.last_played }}</p>
 
 </div>
