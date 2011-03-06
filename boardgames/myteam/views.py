@@ -2,6 +2,7 @@
 
 from django.http import HttpResponse
 from django.shortcuts import render_to_response
+from django.template import RequestContext
 
 import urllib2
 import urllib
@@ -12,6 +13,8 @@ import sys
 
 sys.path.append('/home/cleveb/keys/')
 import cowboy_keys
+
+from models import LoginForm
 
 def build_url( method ):
     
@@ -151,11 +154,23 @@ def team_cowboy_get_team_members(usertoken,  teamid ):
 
 def index( request ):
     
-    login = team_cowboy_login('nissleyp', '')
-    teamids = team_cowboy_get_teamid( login['body']['token'] )
-    teams = team_cowboy_get_team_members(login['body']['token'], teamids )
+    if request.method == 'POST':
+        login_form = LoginForm( request.POST )
+        if login_form.is_valid():
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+            login = team_cowboy_login(username, password)
+            teamids = team_cowboy_get_teamid( login['body']['token'] )
+            teams = team_cowboy_get_team_members(login['body']['token'], teamids )
 
-    return render_to_response('myteam/index.html', { 'team_info': teams })
+            return render_to_response('myteam/index.html', { 'team_info': teams })
+        else:
+            return render_to_response('myteam/index.html', { 'login_form':login_form })
+    else:
+        # must be a get
+        login = LoginForm()
+        return render_to_response('myteam/index.html', { 'login_form':login }, context_instance=RequestContext(request))
+
 #    return HttpResponse( str(teams) ) 
 
 if __name__ == '__main__':
