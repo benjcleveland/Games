@@ -37,6 +37,10 @@ def create_url_string( url_dict ):
     return url_string[1:]
 
 def create_sig( url_dict, req_type ):
+    '''
+    create the sig portion of the request and save it in the url dict
+    '''
+
     p_api_key = cowboy_keys.PRIVATE_KEY 
 
     url_string = create_url_string(url_dict).lower()
@@ -160,9 +164,22 @@ def index( request ):
         if login_form.is_valid():
             username = login_form.cleaned_data['username']
             password = login_form.cleaned_data['password']
-            login = team_cowboy_login(username, password)
-            teamids = team_cowboy_get_teamid( login['body']['token'] )
-            teams = team_cowboy_get_team_members(login['body']['token'], teamids )
+
+            try:
+                # try to login
+                login = team_cowboy_login(username, password)
+            except urllib2.HTTPError:
+                # assume a failure means that the username and password is in correct
+                message = 'Invalid username or password!'
+                login_form = LoginForm()
+                return render_to_response('myteam/index.html', { 'title' : 'Login', 'message' : message, 'login_form':login_form }, context_instance=RequestContext(request))
+
+            try:
+                teamids = team_cowboy_get_teamid( login['body']['token'] )
+                teams = team_cowboy_get_team_members(login['body']['token'], teamids )
+            except urllib2.HTTPError,e:
+                message = 'Error getting data from team cowboy...'
+                return render_to_response('myteam/index.html', { 'title' : 'Login', 'message' : message, 'login_form':login_form }, context_instance=RequestContext(request))
 
             message = 'Displaying results for user ' +  str(username)
 
@@ -178,7 +195,7 @@ def index( request ):
 #    return HttpResponse( str(teams) ) 
 
 if __name__ == '__main__':
-# test stuff
+# test stuff - not normaly executed
 # login
     team_cowboy_test( 'Ben is')
     team_cowboy_test_post( 'Ben is')
