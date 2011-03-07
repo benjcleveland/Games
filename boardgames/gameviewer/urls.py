@@ -7,4 +7,5 @@ urlpatterns = patterns('gameviewer.views',
     (r'^rate/(?P<game_id>\d+)/$', 'rate'),
     (r'^about/$', 'about'),
     (r'^top/$', 'top'),
+    (r'^usertop/$', 'user_top'),
 )

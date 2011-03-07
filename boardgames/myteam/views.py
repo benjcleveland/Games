@@ -155,6 +155,7 @@ def team_cowboy_get_team_members(usertoken,  teamid ):
 def index( request ):
     
     if request.method == 'POST':
+        # user entered login information
         login_form = LoginForm( request.POST )
         if login_form.is_valid():
             username = login_form.cleaned_data['username']
@@ -163,13 +164,16 @@ def index( request ):
             teamids = team_cowboy_get_teamid( login['body']['token'] )
             teams = team_cowboy_get_team_members(login['body']['token'], teamids )
 
-            return render_to_response('myteam/index.html', { 'team_info': teams })
+            message = 'Displaying results for user ' +  str(username)
+
+            return render_to_response('myteam/index.html', { 'team_info': teams, 'title' : 'Contact lists from team cowboy', 'message' : message})
         else:
-            return render_to_response('myteam/index.html', { 'login_form':login_form })
+            return render_to_response('myteam/index.html', { 'title' : 'Login', 'message' : 'Enter your team cowboy username and password', 'login_form':login_form }, context_instance=RequestContext(request))
     else:
         # must be a get
         login = LoginForm()
-        return render_to_response('myteam/index.html', { 'login_form':login }, context_instance=RequestContext(request))
+        message = 'Enter your team cowboy username and password.'
+        return render_to_response('myteam/index.html', { 'title' : 'Login', 'message' : message, 'login_form':login }, context_instance=RequestContext(request))
 
 #    return HttpResponse( str(teams) ) 
 
@@ -178,7 +182,7 @@ if __name__ == '__main__':
 # login
     team_cowboy_test( 'Ben is')
     team_cowboy_test_post( 'Ben is')
-    login = team_cowboy_login('nissleyp', '')
+    login = team_cowboy_login('', '')
     teamids = team_cowboy_get_teamid( login['body']['token'] )
     team_cowboy_get_team_members(login['body']['token'], teamids )
 

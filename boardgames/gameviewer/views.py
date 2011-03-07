@@ -50,6 +50,20 @@ def top(request):
 
     return render_to_response('gameviewer/index.html', {'latest_game_list':top_list, 'title':'Top 10 Rated board games'})
 
+def user_top(request):
+    '''
+    display the top 10 games per user
+    '''
+
+    names = Rating.objects.values('name').distinct().order_by('name')
+    
+    top_rated_games = [] 
+    for name in names:
+        top_rated_games.append( ( name['name'], Rating.objects.filter(name=name['name']).order_by('rating').reverse()[:10]))
+        
+    return render_to_response('gameviewer/user.html', {'latest_game_list':top_rated_games, 'title':'Top 10 rated board games by user'})
+    return HttpResponse( top_rated_games  )
+    
 def detail(request, game_id):
     '''
     Display details about the game
@@ -77,8 +91,8 @@ def rate(request, game_id):
 
     if rating_form.is_valid():
 
-        name = rating_form.cleaned_data['name']
-        comment = rating_form.cleaned_data['comment']
+        name = rating_form.cleaned_data['name'].strip()
+        comment = rating_form.cleaned_data['comment'].strip()
         rating = rating_form.cleaned_data['rating']
 
         r = game.rating_set.create(rating=rating, name=name, comment=comment)
