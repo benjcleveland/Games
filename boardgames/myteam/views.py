@@ -178,7 +178,7 @@ def index( request ):
 #    return HttpResponse( str(teams) ) 
 
 if __name__ == '__main__':
-
+# test stuff
 # login
     team_cowboy_test( 'Ben is')
     team_cowboy_test_post( 'Ben is')
